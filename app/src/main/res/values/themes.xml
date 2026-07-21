@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base theme; the actual colors are supplied by Compose (Material3). -->
+    <style name="Theme.HomePoker" parent="android:Theme.Material.NoActionBar">
+        <item name="android:statusBarColor">#0B3D1E</item>
+        <item name="android:navigationBarColor">#0B3D1E</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlin.coroutines.coroutineContext
 
 /**
  * Drives an offline single-player table: the human sits in seat 0, the rest are
@@ -138,7 +139,7 @@ class GameViewModel : ViewModel() {
 
     private suspend fun runTurnTimer(e: HandEngine, actor: Player) {
         val start = System.currentTimeMillis()
-        while (isActive) {
+        while (coroutineContext.isActive) {
             val elapsed = System.currentTimeMillis() - start
             val frac = (1f - elapsed.toFloat() / turnTimerMs).coerceIn(0f, 1f)
             _state.value = _state.value.copy(turnFraction = frac)

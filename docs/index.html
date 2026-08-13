@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+  <meta name="theme-color" content="#0f766e" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="אירועים" />
+  <title>ניהול אירועים ומלצרים</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="app-header">
+    <span class="logo">🍽️</span>
+    <h1 id="header-title">האירועים שלי</h1>
+    <span class="spacer"></span>
+    <button class="header-btn" id="btn-backup" title="גיבוי ושחזור">גיבוי</button>
+  </header>
+
+  <!-- ========== VIEW: NEW / EDIT JOB ========== -->
+  <section class="view" id="view-form">
+    <div class="section-title" id="form-mode-title">רישום עבודה חדשה</div>
+    <form id="job-form" autocomplete="off">
+      <input type="hidden" id="f-id" />
+
+      <div class="card">
+        <h3>פרטי הלקוח והאירוע</h3>
+        <div class="field">
+          <label for="f-client">שם הלקוח</label>
+          <input type="text" id="f-client" placeholder="שם הלקוח" />
+        </div>
+        <div class="field">
+          <label for="f-date">תאריך האירוע</label>
+          <input type="date" id="f-date" />
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="f-daytype">שבת / יום חול</label>
+            <select id="f-daytype">
+              <option value="">— בחר —</option>
+              <option value="יום חול">יום חול</option>
+              <option value="שבת">שבת</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="f-guests">כמות אורחים</label>
+            <input type="number" id="f-guests" inputmode="numeric" min="0" placeholder="0" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="f-eventtype">סוג האירוע</label>
+          <select id="f-eventtype">
+            <option value="">— בחר —</option>
+            <option>בר מצווה</option>
+            <option>בת מצווה</option>
+            <option>שבת בר מצווה</option>
+            <option>שבת בת מצווה</option>
+            <option>שבת חתן</option>
+            <option>שבת שבע ברכות</option>
+            <option>שבע ברכות</option>
+            <option>ברית</option>
+            <option value="__other__">אחר…</option>
+          </select>
+          <input type="text" id="f-eventtype-other" class="hidden" placeholder="פרט את סוג האירוע" style="margin-top:8px" />
+        </div>
+        <div class="field">
+          <label for="f-esthours">שעות משוערות של האירוע</label>
+          <input type="number" id="f-esthours" inputmode="decimal" min="0" step="0.5" placeholder="לדוגמה 5" />
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>מיקום</h3>
+        <div class="field">
+          <label for="f-location">מיקום האירוע</label>
+          <input type="text" id="f-location" placeholder="עיר / אולם / כתובת" />
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="f-hall">סוג המקום</label>
+            <select id="f-hall">
+              <option value="">— בחר —</option>
+              <option>בית כנסת</option>
+              <option>בית פרטי</option>
+              <option>דירה</option>
+              <option>אולם</option>
+              <option value="__other__">אחר…</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="f-plates">סוג צלחות</label>
+            <select id="f-plates">
+              <option value="">— בחר —</option>
+              <option>חד"פ</option>
+              <option>רב פעמי</option>
+            </select>
+          </div>
+        </div>
+        <input type="text" id="f-hall-other" class="hidden" placeholder="פרט את סוג המקום" />
+      </div>
+
+      <div class="card">
+        <h3>ניהול וצוות</h3>
+        <div class="field">
+          <label for="f-manager">מי המנהל באירוע</label>
+          <select id="f-manager">
+            <option value="">— בחר —</option>
+            <option>טפר</option>
+            <option>מיכה</option>
+            <option value="__other__">אחר…</option>
+          </select>
+          <input type="text" id="f-manager-other" class="hidden" placeholder="שם המנהל" style="margin-top:8px" />
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="f-numwaiters">כמות מלצרים</label>
+            <input type="number" id="f-numwaiters" inputmode="numeric" min="0" max="60" placeholder="0" />
+          </div>
+          <div class="field">
+            <label for="f-waiterrate">תשלום למלצר לשעה <span class="hint">(₪)</span></label>
+            <input type="number" id="f-waiterrate" inputmode="decimal" min="0" placeholder="0" />
+          </div>
+        </div>
+
+        <div class="toggle-row">
+          <input type="checkbox" id="f-special-on" />
+          <label for="f-special-on">יש מלצר מיוחד (תשלום גבוה יותר)</label>
+        </div>
+        <div id="special-fields" class="hidden">
+          <div class="row2">
+            <div class="field">
+              <label for="f-special-name">שם המלצר המיוחד</label>
+              <input type="text" id="f-special-name" placeholder="שם" />
+            </div>
+            <div class="field">
+              <label for="f-special-rate">תשלום לשעה <span class="hint">(₪)</span></label>
+              <input type="number" id="f-special-rate" inputmode="decimal" min="0" placeholder="0" />
+            </div>
+          </div>
+        </div>
+
+        <div class="field" id="waiter-names-field">
+          <label>שמות המלצרים</label>
+          <div id="waiter-names-container"></div>
+          <div class="hint" id="waiter-names-hint">קבע קודם את כמות המלצרים כדי להזין שמות</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>תשלום</h3>
+        <div class="field">
+          <label for="f-total">סכום כולל שנתתי ללקוח <span class="hint">(₪)</span></label>
+          <input type="number" id="f-total" inputmode="decimal" min="0" placeholder="0" />
+        </div>
+        <div class="toggle-row">
+          <input type="checkbox" id="f-paid" />
+          <label for="f-paid">הלקוח שילם</label>
+        </div>
+        <div id="calc-box" class="calc-box hidden"></div>
+      </div>
+
+      <div class="card">
+        <h3>הערות</h3>
+        <div class="field">
+          <textarea id="f-notes" placeholder="הערות חופשיות, בקשות מיוחדות…"></textarea>
+        </div>
+      </div>
+
+      <div class="btn-row" style="margin-bottom:14px">
+        <button type="button" class="btn secondary" id="btn-cancel-edit">ביטול</button>
+        <button type="submit" class="btn" id="btn-save">שמור עבודה</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- ========== VIEW: LIST ========== -->
+  <section class="view" id="view-list">
+    <div class="list-controls">
+      <input type="search" id="search-input" placeholder="חיפוש לפי שם / מיקום / סוג…" />
+      <select id="sort-select" style="width:auto">
+        <option value="date-desc">חדש→ישן</option>
+        <option value="date-asc">ישן→חדש</option>
+        <option value="upcoming">הקרובים</option>
+      </select>
+    </div>
+    <div id="list-container"></div>
+  </section>
+
+  <!-- ========== VIEW: CALENDAR ========== -->
+  <section class="view" id="view-calendar">
+    <div class="cal-header">
+      <button class="cal-nav" id="cal-prev">‹</button>
+      <div class="title" id="cal-title"></div>
+      <button class="cal-nav" id="cal-next">›</button>
+    </div>
+    <div class="cal-grid" id="cal-dow-row"></div>
+    <div class="cal-grid" id="cal-grid" style="margin-top:4px"></div>
+    <div class="cal-day-events" id="cal-day-events"></div>
+  </section>
+
+  <!-- ========== BOTTOM NAV ========== -->
+  <nav class="bottom-nav">
+    <button class="nav-btn" data-view="list"><span class="ic">📋</span>העבודות</button>
+    <button class="nav-btn" data-view="form"><span class="ic">➕</span>עבודה חדשה</button>
+    <button class="nav-btn" data-view="calendar"><span class="ic">📅</span>לוח שנה</button>
+  </nav>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- Confirm modal -->
+  <div class="modal-backdrop" id="modal">
+    <div class="modal">
+      <p id="modal-text"></p>
+      <div class="btn-row">
+        <button class="btn secondary" id="modal-cancel">ביטול</button>
+        <button class="btn danger" id="modal-ok">מחק</button>
+      </div>
+    </div>
+  </div>
+
+  <input type="file" id="import-file" accept="application/json" class="hidden" />
+
+  <script src="app.js"></script>
+</body>
+</html>

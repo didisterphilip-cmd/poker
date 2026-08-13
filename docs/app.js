@@ -166,31 +166,49 @@ $('f-special-on').addEventListener('change', () => {
 ['f-esthours', 'f-numwaiters', 'f-waiterrate', 'f-special-rate', 'f-total'].forEach(id => {
   $(id).addEventListener('input', updateCalc);
 });
-function updateCalc() {
-  const hours = num($('f-esthours').value);
-  const nw = num($('f-numwaiters').value);
-  const rate = num($('f-waiterrate').value);
-  const specialOn = $('f-special-on').checked;
-  const specialRate = specialOn ? num($('f-special-rate').value) : 0;
-  const total = num($('f-total').value);
+// Cost/profit model. The special waiter is ONE OF the total waiters
+// (not an extra), so regular waiters = numWaiters - 1 when a special is set.
+// Example: 3 waiters, one special @65, rest @45, 4h, ₪2000 from client
+//   = 2000 - (2×45×4) - (1×65×4) = 2000 - 360 - 260 = 1380
+function computeCost(ev) {
+  const hours = num(ev.estHours);
+  const nw = num(ev.numWaiters);
+  const rate = num(ev.waiterRate);
+  const specialOn = !!ev.specialOn;
+  const specialRate = specialOn ? num(ev.specialRate) : 0;
+  const regularCount = specialOn ? Math.max(0, nw - 1) : nw;
+  const regularCost = regularCount * rate * hours;
+  const specialCost = specialOn ? specialRate * hours : 0;
+  const cost = regularCost + specialCost;
+  const total = num(ev.total);
+  return { hours, nw, rate, specialOn, specialRate, regularCount, regularCost, specialCost, cost, total, left: total - cost };
+}
 
-  const waitersCost = nw * rate * hours;
-  const specialCost = specialRate * hours;
-  const cost = waitersCost + specialCost;
-  const box = $('calc-box');
-
-  if (!hours || (!cost && !total)) { box.classList.add('hidden'); box.innerHTML = ''; return; }
-  box.classList.remove('hidden');
-  const profit = total - cost;
+function calcBoxHtml(c) {
   let html = '';
-  if (waitersCost) html += `<div class="line"><span>עלות מלצרים (${nw} × ${money(rate)} × ${hours} ש')</span><span>${money(waitersCost)}</span></div>`;
-  if (specialCost) html += `<div class="line"><span>מלצר מיוחד (${money(specialRate)} × ${hours} ש')</span><span>${money(specialCost)}</span></div>`;
-  html += `<div class="line total"><span>סה"כ עלות משוערת</span><span>${money(cost)}</span></div>`;
-  if (total) {
-    html += `<div class="line"><span>סכום מהלקוח</span><span>${money(total)}</span></div>`;
-    html += `<div class="line total"><span>רווח משוער</span><span class="${profit >= 0 ? 'profit-pos' : 'profit-neg'}">${money(profit)}</span></div>`;
+  if (c.regularCost) html += `<div class="line"><span>מלצרים רגילים (${c.regularCount} × ${money(c.rate)} × ${c.hours} ש')</span><span>${money(c.regularCost)}</span></div>`;
+  if (c.specialCost) html += `<div class="line"><span>מלצר מיוחד (${money(c.specialRate)} × ${c.hours} ש')</span><span>${money(c.specialCost)}</span></div>`;
+  html += `<div class="line total"><span>סה"כ תשלום למלצרים</span><span>${money(c.cost)}</span></div>`;
+  if (c.total) {
+    html += `<div class="line"><span>קיבלתי מהלקוח</span><span>${money(c.total)}</span></div>`;
+    html += `<div class="line total"><span>💰 נשאר לי</span><span class="${c.left >= 0 ? 'profit-pos' : 'profit-neg'}">${money(c.left)}</span></div>`;
   }
-  box.innerHTML = html;
+  return html;
+}
+
+function updateCalc() {
+  const c = computeCost({
+    estHours: $('f-esthours').value,
+    numWaiters: $('f-numwaiters').value,
+    waiterRate: $('f-waiterrate').value,
+    specialOn: $('f-special-on').checked,
+    specialRate: $('f-special-rate').value,
+    total: $('f-total').value,
+  });
+  const box = $('calc-box');
+  if (!c.hours || (!c.cost && !c.total)) { box.classList.add('hidden'); box.innerHTML = ''; return; }
+  box.classList.remove('hidden');
+  box.innerHTML = calcBoxHtml(c);
 }
 
 function resetForm() {
@@ -363,6 +381,13 @@ function renderEventCard(ev) {
   if (ev.dayType) tags.push(`<span class="tag ${ev.dayType === 'שבת' ? 'shabbat' : ''}">${esc(ev.dayType)}</span>`);
   if (num(ev.total) > 0) tags.push(`<span class="tag ${ev.paid ? 'paid' : ''}">${ev.paid ? 'שולם' : 'לא שולם'} · ${money(ev.total)}</span>`);
 
+  const c = computeCost(ev);
+  if (c.total > 0 && c.cost > 0) {
+    const bg = c.left >= 0 ? '#dcfce7' : '#fee2e2';
+    const fg = c.left >= 0 ? '#15803d' : '#b91c1c';
+    tags.push(`<span class="tag" style="background:${bg};color:${fg};font-weight:700">💰 נשאר לי ${money(c.left)}</span>`);
+  }
+
   const metaBits = [];
   if (ev.location) metaBits.push('📍 ' + esc(ev.location));
   if (ev.guests) metaBits.push('👥 ' + esc(ev.guests));
@@ -406,6 +431,7 @@ function renderEventCard(ev) {
         ${detailItem('סכום מהלקוח', ev.total ? money(ev.total) : '')}
         ${detailItem('סטטוס תשלום', ev.total ? (ev.paid ? 'שולם ✓' : 'טרם שולם') : '')}
         ${ev.notes ? detailItem('הערות', ev.notes, true) : ''}
+        ${(c.cost || c.total) ? `<div class="detail-item full"><div class="k">חישוב רווח</div><div class="calc-box" style="margin:6px 0 0">${calcBoxHtml(c)}</div></div>` : ''}
       </div>
       <div class="detail-actions">
         <button class="btn secondary" data-edit="${ev.id}">✏️ עריכה</button>

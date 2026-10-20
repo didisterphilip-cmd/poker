@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string name="app_name">Home Poker</string>
-    <string name="play_friends">Play with Friends</string>
-    <string name="quick_play">Quick Play (Bots)</string>
-    <string name="tournaments">Tournaments</string>
-</resources>
